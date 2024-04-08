@@ -37,10 +37,11 @@ def register():
     if request.method == 'GET':
         return render_template("register.html")
     else:
+        encrypted = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256', salt_length=6)
         new_user = User(
             name=request.form.get('name'),
             email=request.form.get('email'),
-            password=request.form.get('password')
+            password=encrypted
         )
         db.session.add(new_user)
         db.session.commit()
