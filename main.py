@@ -11,7 +11,7 @@ app.config['SECRET_KEY'] = 'secret-key-goes-here'
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
@@ -31,9 +31,19 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    return render_template("register.html")
+    if request.method == 'GET':
+        return render_template("register.html")
+    else:
+        new_user = User(
+            name=request.form.get('name'),
+            email=request.form.get('email'),
+            password=request.form.get('password')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        return render_template("secrets.html", name=request.form.get('name'))
 
 
 @app.route('/login')
