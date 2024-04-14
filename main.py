@@ -50,15 +50,21 @@ def register():
     if request.method == 'GET':
         return render_template("register.html")
     else:
-        encrypted = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256', salt_length=6)
-        new_user = User(
-            name=request.form.get('name'),
-            email=request.form.get('email'),
-            password=encrypted
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        return render_template("login.html")
+        existing_user = db.session.query(User).where(User.email == request.form.get('email'))
+        if existing_user:
+            flash('Email already registered')
+            return render_template("login.html")
+
+        else:
+            encrypted = generate_password_hash(request.form.get('password'), method='pbkdf2:sha256', salt_length=6)
+            new_user = User(
+                name=request.form.get('name'),
+                email=request.form.get('email'),
+                password=encrypted
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            return render_template("login.html")
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -78,8 +84,10 @@ def login():
 
                 return redirect(url_for('secrets'))
             else:
+                flash('Wrong password')
                 return redirect(url_for('login'))
         else:
+            flash('User does not exist')
             return redirect(url_for('login'))
 
 
